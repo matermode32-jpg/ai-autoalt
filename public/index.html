@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-AutoAlt · SEO Image Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">AI-AutoAlt</h1>
+                <p class="text-gray-600 mt-1">AI‑powered alt text for your Shopify images</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm px-4 py-2 text-sm">
+                <span class="font-medium text-gray-700" id="plan-badge">Free Plan</span>
+            </div>
+        </div>
+
+        <!-- Usage Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">📊 Monthly Usage</h2>
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-600" id="usage-text">Loading...</span>
+                <span class="text-sm font-medium text-indigo-600" id="limit-text"></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-indigo-600 h-2.5 rounded-full" id="usage-bar" style="width: 0%"></div>
+            </div>
+            <div id="upgradeMessage" class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg hidden">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-amber-700">
+                            You've reached your free limit.
+                            <a href="#" onclick="upgradePlan()" class="font-medium underline text-amber-700 hover:text-amber-600">Upgrade to Premium ($9.99/month)</a> for 500 images/month.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">⚡ Fix Missing Alt Texts</h2>
+            <p class="text-gray-600 mb-4">Scan all products and generate alt text for images without any. Auto‑pilot mode will also handle new products automatically.</p>
+            
+            <button id="fixBtn" class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Run Full Scan
+            </button>
+
+            <div id="status" class="mt-4 p-4 rounded-lg hidden"></div>
+
+            <div class="mt-6 border-t border-gray-200 pt-4">
+                <h3 class="text-sm font-medium text-gray-700">✅ Auto‑pilot active</h3>
+                <p class="text-sm text-gray-500 mt-1">New products will be processed automatically via webhook. No action needed.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadUsage() {
+            const res = await fetch('/api/usage');
+            const data = await res.json();
+            
+            document.getElementById('plan-badge').innerText = data.plan === 'premium' ? 'Premium Plan' : 'Free Plan';
+            document.getElementById('usage-text').innerText = `Used: ${data.used} / ${data.limit} images`;
+            document.getElementById('limit-text').innerText = `${data.limit} images/month`;
+            
+            const percent = (data.used / data.limit) * 100;
+            document.getElementById('usage-bar').style.width = percent + '%';
+            
+            if (data.plan === 'free' && data.used >= data.limit) {
+                document.getElementById('upgradeMessage').classList.remove('hidden');
+            } else {
+                document.getElementById('upgradeMessage').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('fixBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('fixBtn');
+            const statusDiv = document.getElementById('status');
+            btn.disabled = true;
+            statusDiv.className = 'mt-4 p-4 rounded-lg bg-blue-50 text-blue-700';
+            statusDiv.innerText = 'Processing... This may take a minute.';
+            statusDiv.classList.remove('hidden');
+
+            try {
+                // Fix: Send proper JSON headers and body
+                const res = await fetch('/api/fix-alt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (data.error) {
+                    statusDiv.className = 'mt-4 p-4 rounded-lg bg-red-50 text-red-700';
+                    statusDiv.innerText = `❌ Error: ${data.error}`;
+                } else {
+                    statusDiv.className = 'mt-4 p-4 rounded-lg bg-green-50 text-green-700';
+                    statusDiv.innerText = `✅ Fixed ${data.updated} images. Remaining this month: ${data.remaining}`;
+                    loadUsage();
+                }
+            } catch (err) {
+                statusDiv.className = 'mt-4 p-4 rounded-lg bg-red-50 text-red-700';
+                statusDiv.innerText = `❌ Request failed: ${err.message}`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        function upgradePlan() {
+            window.location.href = 'mailto:youremail@example.com?subject=Upgrade%20to%20Premium&body=Shop%20domain:%20' + encodeURIComponent(window.location.search);
+        }
+
+        loadUsage();
+    </script>
+</body>
+</html> matermode32-jpg

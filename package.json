@@ -1,0 +1,20 @@
+﻿{
+  "name": "ai-autoalt",
+  "version": "1.0.0",
+  "description": "Shopify app that auto-generates SEO alt text for product images using AI",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "keywords": ["shopify", "seo", "alt-text", "ai", "groq"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@shopify/shopify-api": "^12.3.0",
+    "@supabase/supabase-js": "^2.95.3",
+    "axios": "^1.13.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1"
+  }
+}

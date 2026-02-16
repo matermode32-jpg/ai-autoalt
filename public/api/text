@@ -1,0 +1,9 @@
+ai-autoalt/
+├── api/
+│   └── index.js
+├── public/
+│   └── index.html
+├── .env
+├── .gitignore
+├── package.json
+└── vercel.json
